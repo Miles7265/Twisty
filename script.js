@@ -20,6 +20,69 @@ function saveAll() {
   localStorage.setItem("twistyIncome", JSON.stringify(income));
   localStorage.setItem("twistyLastReceipt", JSON.stringify(lastReceipt));
 }
+// Crop every photo to the same square size so they all look alike,
+// and keep it small enough to save in the browser
+const PHOTO_SIZE = 400;
+
+function readPhoto(file) {
+  return new Promise(resolve => {
+    if (!file) return resolve("");
+    const reader = new FileReader();
+    reader.onerror = () => resolve("");
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => resolve("");
+      img.onload = () => {
+        const side = Math.min(img.width, img.height);
+        const sx = (img.width - side) / 2;
+        const sy = (img.height - side) / 2;
+        const canvas = document.createElement("canvas");
+        canvas.width = PHOTO_SIZE;
+        canvas.height = PHOTO_SIZE;
+        canvas.getContext("2d").drawImage(img, sx, sy, side, side, 0, 0, PHOTO_SIZE, PHOTO_SIZE);
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function showPhotoPreview(file) {
+  const box = document.getElementById("photoPreview");
+  if (file) {
+    box.innerHTML = `<img src="${URL.createObjectURL(file)}" alt="Preview">`;
+  } else {
+    box.innerHTML = `<span class="ph-icon">📷</span><span class="ph-text">Add photo</span>`;
+  }
+}
+
+document.getElementById("productPhoto").addEventListener("change", e => {
+  showPhotoPreview(e.target.files[0]);
+});
+
+document.getElementById("productForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const name = document.getElementById("productName").value.trim();
+  const price = Number(document.getElementById("productPrice").value);
+  const stock = Number(document.getElementById("productStock").value);
+  const image = await readPhoto(document.getElementById("productPhoto").files[0]);
+
+  products.push({
+    id: Date.now(),
+    name,
+    price,
+    stock,
+    image
+  });
+
+  saveAll();
+  e.target.reset();
+  renderInventory();
+  renderDashboard();
+  showToast("Product added to inventory.");
+});
 
 function todayString() {
   return new Date().toISOString().split("T")[0];
