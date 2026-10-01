@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twisty Bloom | Flower Shop Management</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🌷</div>
+      <div>
+        <h1>Twisty Bloom</h1>
+        <p>Flower Shop Management System</p>
+      </div>
+    </div>
+    <div class="date" id="currentDate"></div>
+  </header>
+
+  <nav class="nav">
+    <button class="nav-btn active" data-section="dashboard">Dashboard</button>
+    <button class="nav-btn" data-section="inventory">Inventory</button>
+    <button class="nav-btn" data-section="expenses">Expenses</button>
+    <button class="nav-btn" data-section="receipt">Receipt</button>
+    <button class="nav-btn" data-section="report">Weekly Report</button>
+  </nav>
+
+  <main class="container">
+    <section id="dashboard" class="section active">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">WELCOME</span>
+          <h2>Twisty Bloom Dashboard</h2>
+          <p>Manage your flowers, sales, expenses, and weekly performance.</p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card">
+          <span>💐 Products</span>
+          <strong id="dashProducts">0</strong>
+          <small>items in inventory</small>
+        </div>
+        <div class="stat-card">
+          <span>📦 Stock</span>
+          <strong id="dashStock">0</strong>
+          <small>total units available</small>
+        </div>
+        <div class="stat-card">
+          <span>🛒 Sales</span>
+          <strong id="dashSales">₱0.00</strong>
+          <small>all recorded sales</small>
+        </div>
+        <div class="stat-card">
+          <span>💸 Expenses</span>
+          <strong id="dashExpenses">₱0.00</strong>
+          <small>all recorded expenses</small>
+        </div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="panel">
+          <div class="panel-title">
+            <h3>Low Stock</h3>
+            <button class="text-btn" onclick="showSection('inventory')">View inventory</button>
+          </div>
+          <div id="lowStockList" class="list"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <h3>Quick Actions</h3>
+          </div>
+          <div class="quick-actions">
+            <button onclick="showSection('inventory')">🌸 Update Inventory</button>
+            <button onclick="showSection('inventory'); focusAddProduct()">＋ Add Product</button>
+            <button onclick="showSection('expenses'); focusExpense()">💸 Add Expense</button>
+            <button onclick="showSection('report')">📊 Weekly Report</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="inventory" class="section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">INVENTORY</span>
+          <h2>Inventory List</h2>
+          <p>Update the stock available for each flower product.</p>
+        </div>
+        <button class="primary" onclick="focusAddProduct()">＋ Add Product</button>
+      </div>
+
+      <div class="panel form-panel" id="addProductPanel">
+        <h3>Add New Product</h3>
+        <form id="productForm" class="form-grid">
+          <input id="productName" placeholder="Product name" required>
+          <input id="productPrice" type="number" min="0" step="0.01" placeholder="Price" required>
+          <input id="productStock" type="number" min="0" step="1" placeholder="Stock" required>
+          <button class="primary" type="submit">Add Product</button>
+        </form>
+      </div>
+
+      <div class="panel table-panel">
+        <div class="table-tools">
+          <input id="inventorySearch" placeholder="Search products..." oninput="renderInventory()">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Status</th>
+                <th>Update</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="inventoryBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="expenses" class="section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">EXPENSES</span>
+          <h2>Expenses Counter</h2>
+          <p>Record shop expenses and track the total amount spent.</p>
+        </div>
+      </div>
+
+      <div class="stats single-stat">
+        <div class="stat-card highlight">
+          <span>💸 Total Expenses</span>
+          <strong id="expenseTotal">₱0.00</strong>
+          <small>recorded expenses</small>
+        </div>
+      </div>
+
+      <div class="panel form-panel">
+        <h3>Add Expense</h3>
+        <form id="expenseForm" class="form-grid">
+          <input id="expenseName" placeholder="Expense description" required>
+          <input id="expenseAmount" type="number" min="0" step="0.01" placeholder="Amount" required>
+          <input id="expenseDate" type="date" required>
+          <button class="primary" type="submit">Add Expense</button>
+        </form>
+      </div>
+
+      <div class="panel table-panel">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="expenseBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="receipt" class="section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">RECEIPT</span>
+          <h2>Latest Receipt</h2>
+          <p>Your latest receipt appears here.</p>
+        </div>
+        <button class="secondary" onclick="printReceipt()">🖨 Print Receipt</button>
+      </div>
+
+      <div id="receiptBox" class="receipt">
+        <div class="receipt-empty">No receipt yet.</div>
+      </div>
+    </section>
+
+    <section id="report" class="section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">REPORT</span>
+          <h2>Weekly Report</h2>
+          <p>Review sales, expenses, and estimated net income for the current week.</p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card"><span>🛍 Weekly Sales</span><strong id="weeklySales">₱0.00</strong></div>
+        <div class="stat-card"><span>💸 Weekly Expenses</span><strong id="weeklyExpenses">₱0.00</strong></div>
+        <div class="stat-card"><span>💰 Estimated Net</span><strong id="weeklyNet">₱0.00</strong></div>
+        <div class="stat-card"><span>🧾 Transactions</span><strong id="weeklyTransactions">0</strong></div>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="panel">
+          <h3>Weekly Sales</h3>
+          <div id="weeklySalesList" class="list"></div>
+        </div>
+        <div class="panel">
+          <h3>Weekly Expenses</h3>
+          <div id="weeklyExpenseList" class="list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
