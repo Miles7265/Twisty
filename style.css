@@ -903,3 +903,98 @@ th {
     text-align: center;
   }
 }
+
+/* ===== Product photos: one square size, polished look ===== */
+:root { --thumb: 64px; }
+
+.photo-picker {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border: 2px dashed var(--border);
+  border-radius: 16px;
+  background: var(--pink-light);
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+
+.photo-picker:hover { border-color: var(--pink-dark); background: #fff; }
+
+.photo-preview {
+  flex: none;
+  width: 96px;
+  height: 96px;
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  background: #fff;
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 12px rgba(214, 51, 132, .12);
+  color: var(--pink-dark);
+  text-align: center;
+}
+
+.photo-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-preview .ph-icon { font-size: 28px; line-height: 1; }
+.photo-preview .ph-text { font-size: 12px; font-weight: 700; margin-top: 4px; }
+
+.photo-hint {
+  display: grid;
+  gap: 4px;
+  font-weight: 700;
+  color: var(--text);
+  font-size: 14px;
+}
+
+.photo-hint small { font-weight: 500; color: var(--muted); font-size: 12px; }
+
+.prod-cell { display: flex; align-items: center; gap: 14px; }
+
+.prod-name { display: grid; gap: 2px; min-width: 0; }
+.prod-name small { font-size: 11px; }
+
+/* every product photo is exactly the same square */
+.thumb {
+  position: relative;
+  flex: none;
+  width: var(--thumb);
+  height: var(--thumb);
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  background: linear-gradient(135deg, #fff0f6, #ffd9e8);
+  border: 1px solid var(--border);
+  box-shadow: 0 3px 10px rgba(214, 51, 132, .14);
+  transition: transform .15s, box-shadow .15s;
+}
+
+.thumb:hover { transform: translateY(-1px) scale(1.03); box-shadow: 0 6px 16px rgba(214, 51, 132, .22); }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumb .ph-icon { font-size: 26px; opacity: .85; }
+
+.thumb-badge {
+  position: absolute;
+  right: 3px;
+  bottom: 3px;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .92);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .18);
+}
+
+@media (max-width: 700px) {
+  :root { --thumb: 76px; }
+  .photo-preview { width: 84px; height: 84px; }
+  #inventory tbody td:nth-child(1) { padding-bottom: 12px; }
+}
