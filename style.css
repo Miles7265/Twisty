@@ -23,7 +23,7 @@ body {
   color: var(--text);
 }
 
-button, input {
+button, input, select {
   font: inherit;
 }
 
@@ -285,7 +285,7 @@ h3 {
   gap: 10px;
 }
 
-input {
+input, select {
   width: 100%;
   padding: 11px 12px;
   border: 1px solid #e8ccd8;
@@ -295,7 +295,7 @@ input {
   background: white;
 }
 
-input:focus {
+input:focus, select:focus {
   border-color: var(--pink);
   box-shadow: 0 0 0 3px rgba(232, 93, 158, 0.1);
 }
@@ -373,20 +373,6 @@ th {
   background: transparent;
   font-weight: 700;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .receipt {
   width: min(520px, 100%);
@@ -748,16 +734,6 @@ th {
     background: #fff1f3;
   }
 
-
-
-
-
-
-
-
-
-
-
   .receipt {
     width: 100%;
     padding: 20px 15px;
@@ -793,7 +769,6 @@ th {
     width: 94%;
   }
 
-
   .stats {
     grid-template-columns: 1fr;
   }
@@ -806,4 +781,97 @@ th {
   h2 {
     font-size: 22px;
   }
+}
+
+  /* ===== Income & Payments ===== */
+@media (min-width: 851px) {
+  .income-form { grid-template-columns: 1.8fr 1fr 1fr 1fr 1fr auto; }
+}
+
+.pay-btn, .receipt-btn {
+  border: 0;
+  background: transparent;
+  font-weight: 700;
+  color: var(--pink-dark);
+}
+
+.receipt-btn { color: var(--muted); }
+
+.income-actions { white-space: nowrap; }
+
+.pay-dialog {
+  width: min(380px, 92%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+
+.pay-dialog::backdrop { background: rgba(59, 38, 49, .45); }
+
+.pay-form { display: grid; gap: 10px; }
+.pay-form h3, .pay-form p { margin: 0; }
+.pay-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 4px; }
+
+@media (max-width: 700px) {
+  #income .table-wrap { overflow: visible; }
+  #income table { min-width: 0; }
+
+  #income table,
+  #income thead,
+  #income tbody,
+  #income tr,
+  #income td { display: block; width: 100%; }
+
+  #income thead { display: none; }
+
+  #income tbody tr {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 12px 0;
+    padding: 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: #fffafd;
+  }
+
+  #income tbody td { padding: 0; border: 0; font-size: 15px; }
+
+  #income tbody td.c-name {
+    grid-column: 1 / -1;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f4e4eb;
+    font-size: 17px;
+  }
+
+  #income tbody td:not(.c-name)::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 4px;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+  }
+
+  #income .c-total, #income .c-paid, #income .c-balance { font-size: 16px; }
+  #income .c-balance { color: var(--pink-dark); }
+  #income .c-status .status { font-size: 12px; padding: 6px 10px; }
+  #income .c-action { grid-column: 1 / -1; }
+  #income .c-action::before { display: none; }
+
+  #income .income-actions { display: flex; gap: 8px; }
+  #income .income-actions button {
+    flex: 1;
+    height: 44px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--pink-light);
+  }
+  #income .income-actions .delete-btn { border-color: #f3c3cc; background: #fff1f3; }
+
+  .table-tools select { max-width: none; }
 }
