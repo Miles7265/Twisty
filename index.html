@@ -279,6 +279,14 @@
           <h2>Latest Receipt</h2>
           <p>Your latest receipt appears here.</p>
         </div>
+        <div class="print-tools">
+          <select id="paperSize" onchange="setPaperSize(this.value)" aria-label="Paper size">
+            <option value="58mm">58 mm roll</option>
+            <option value="80mm">80 mm roll</option>
+            <option value="98x148">98 x 148 mm</option>
+          </select>
+          <button class="secondary" onclick="printReceipt()">🖨 Print Receipt</button>
+        </div>
         <button class="secondary" onclick="printReceipt()">🖨 Print Receipt</button>
       </div>
 
