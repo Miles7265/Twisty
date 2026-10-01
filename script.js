@@ -14,11 +14,15 @@ const peso = value => "₱" + Number(value).toLocaleString("en-PH", {
 });
 
 function saveAll() {
-  localStorage.setItem("twistyProducts", JSON.stringify(products));
-  localStorage.setItem("twistyExpenses", JSON.stringify(expenses));
-  localStorage.setItem("twistySales", JSON.stringify(sales));
-  localStorage.setItem("twistyIncome", JSON.stringify(income));
-  localStorage.setItem("twistyLastReceipt", JSON.stringify(lastReceipt));
+  try {
+    localStorage.setItem("twistyProducts", JSON.stringify(products));
+    localStorage.setItem("twistyExpenses", JSON.stringify(expenses));
+    localStorage.setItem("twistySales", JSON.stringify(sales));
+    localStorage.setItem("twistyIncome", JSON.stringify(income));
+    localStorage.setItem("twistyLastReceipt", JSON.stringify(lastReceipt));
+  } catch (err) {
+    showToast("Storage is full. Try smaller or fewer photos.");
+  }
 }
 // Crop every photo to the same square size so they all look alike,
 // and keep it small enough to save in the browser
@@ -181,7 +185,19 @@ function renderInventory() {
 
     return `
       <tr>
-        <td data-label="Product"><strong>${escapeHtml(p.name)}</strong></td>
+        <td data-label="Product" class="c-product">
+          <div class="prod-cell">
+            <label class="thumb ${p.image ? "" : "empty"}" title="Tap to ${p.image ? "change" : "add"} photo">
+              ${p.image ? `<img src="${p.image}" alt="${escapeHtml(p.name)}">` : `<span class="ph-icon">🌸</span>`}
+              <span class="thumb-badge">📷</span>
+              <input type="file" accept="image/*" hidden onchange="changePhoto(${p.id}, this)">
+            </label>
+            <div class="prod-name">
+              <strong>${escapeHtml(p.name)}</strong>
+              <small class="muted">${p.image ? "Tap photo to change" : "Tap to add a photo"}</small>
+            </div>
+          </div>
+        </td>
         <td data-label="Price" class="c-price">${peso(p.price)}</td>
         <td data-label="Stock" class="c-stock"><strong>${p.stock}</strong></td>
         <td data-label="Status" class="c-status"><span class="status ${cls}">${status}</span></td>
@@ -193,6 +209,21 @@ function renderInventory() {
       </tr>
     `;
   }).join("");
+}
+async function changePhoto(id, input) {
+  const product = products.find(p => p.id === id);
+  if (!product || !input.files[0]) return;
+
+  const image = await readPhoto(input.files[0]);
+  if (!image) {
+    showToast("Could not read that photo.");
+    return;
+  }
+
+  product.image = image;
+  saveAll();
+  renderInventory();
+  showToast(`${product.name} photo updated.`);
 }
 
 function updateStock(id, value) {
