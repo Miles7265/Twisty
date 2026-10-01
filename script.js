@@ -194,13 +194,11 @@ function renderReceipt() {
 }
 // ===== Receipt paper size =====
 const paperSizes = {
-  "58mm": "58mm 200mm",
-  "80mm": "80mm 200mm",
   "98x148": "98mm 148mm",
 };
 
 function setPaperSize(size) {
-  if (!paperSizes[size]) size = "80mm";
+  if (!paperSizes[size]) size = "98x148";
   localStorage.setItem("twistyPaper", size);
   document.getElementById("paperSize").value = size;
 
