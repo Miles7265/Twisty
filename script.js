@@ -1,7 +1,7 @@
 const defaultProducts = [
-  { id: 1, name: "Keychain", price: 850, stock: 12 },
-  { id: 2, name: "Small Bouquet", price: 750, stock: 8 },
-  { id: 3, name: "Big Bouquet", price: 650, stock: 15 },
+  { id: 1, name: "Pink Rose Bouquet", price: 850, stock: 12 },
+  { id: 2, name: "Tulip Twist", price: 750, stock: 8 },
+  { id: 3, name: "Sunflower Bloom", price: 650, stock: 15 },
 ];
 
 let products = JSON.parse(localStorage.getItem("twistyProducts")) || defaultProducts;
@@ -274,10 +274,10 @@ function isThisWeek(dateValue) {
 }
 
 function renderReport() {
-  const weeklySales.reduce((sum, p) => sum + Number(p.amount), 0)
+  const weeklySales = allPayments().filter(p => isThisWeek(p.date));
   const weeklyExpenses = expenses.filter(e => isThisWeek(e.date));
 
-  const salesTotal = income.reduce((sum, i) => sum + paidOf(i), 0);
+  const salesTotal = weeklySales.reduce((sum, p) => sum + Number(p.amount), 0);
   const expenseTotal = weeklyExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
   document.getElementById("weeklySales").textContent = peso(salesTotal);
@@ -295,7 +295,7 @@ function renderReport() {
           <strong>${peso(s.amount)}</strong>
         </div>
       `).join("")
-    : `<div class="muted">No sales recorded this week.</div>`;
+    : `<div class="muted">No income received this week.</div>`;
 
   expenseList.innerHTML = weeklyExpenses.length
     ? weeklyExpenses.map(e => `
@@ -304,12 +304,12 @@ function renderReport() {
           <strong>${peso(e.amount)}</strong>
         </div>
       `).join("")
-    : `<div class="muted">No income received this week.</div>`;
+    : `<div class="muted">No expenses recorded this week.</div>`;
 }
 
 function renderDashboard() {
   const totalStock = products.reduce((sum, p) => sum + Number(p.stock), 0);
-  const salesTotal = sales.reduce((sum, s) => sum + Number(s.total), 0);
+  const salesTotal = income.reduce((sum, i) => sum + paidOf(i), 0);
   const expenseTotal = expenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
   document.getElementById("dashProducts").textContent = products.length;
@@ -356,6 +356,7 @@ function showToast(message) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove("show"), 2300);
 }
+
 // ===== Income & Payments =====
 const paidOf = i => i.payments.reduce((sum, p) => sum + Number(p.amount), 0);
 const balanceOf = i => Math.max(0, Number(i.total) - paidOf(i));
@@ -532,6 +533,7 @@ function makeReceipt(id) {
   saveAll();
   showSection("receipt");
 }
+
 // Move any old cart-era sales into the new income list (one time)
 if (sales.length) {
   sales.forEach((s, n) => {
@@ -547,6 +549,7 @@ if (sales.length) {
   sales = [];
   saveAll();
 }
+
 function init() {
   renderDashboard();
   renderInventory();
@@ -554,7 +557,6 @@ function init() {
   renderExpenses();
   renderReceipt();
   renderReport();
-}
 }
 
 init();
