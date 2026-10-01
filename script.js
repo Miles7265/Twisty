@@ -7,6 +7,7 @@ const defaultProducts = [
 let products = JSON.parse(localStorage.getItem("twistyProducts")) || defaultProducts;
 let expenses = JSON.parse(localStorage.getItem("twistyExpenses")) || [];
 let sales = JSON.parse(localStorage.getItem("twistySales")) || [];
+let income = JSON.parse(localStorage.getItem("twistyIncome")) || [];
 let lastReceipt = JSON.parse(localStorage.getItem("twistyLastReceipt")) || null;
 
 const peso = value => "₱" + Number(value).toLocaleString("en-PH", {
@@ -18,6 +19,7 @@ function saveAll() {
   localStorage.setItem("twistyProducts", JSON.stringify(products));
   localStorage.setItem("twistyExpenses", JSON.stringify(expenses));
   localStorage.setItem("twistySales", JSON.stringify(sales));
+  localStorage.setItem("twistyIncome", JSON.stringify(income));
   localStorage.setItem("twistyLastReceipt", JSON.stringify(lastReceipt));
 }
 
@@ -33,6 +35,7 @@ document.getElementById("currentDate").textContent = new Date().toLocaleDateStri
 });
 
 document.getElementById("expenseDate").value = todayString();
+document.getElementById("incomeDate").value = todayString();
 
 document.querySelectorAll(".nav-btn").forEach(btn => {
   btn.addEventListener("click", () => showSection(btn.dataset.section));
@@ -48,6 +51,7 @@ function showSection(id) {
 
   if (id === "dashboard") renderDashboard();
   if (id === "inventory") renderInventory();
+  if (id === "income") renderIncome();
   if (id === "expenses") renderExpenses();
   if (id === "receipt") renderReceipt();
   if (id === "report") renderReport();
@@ -58,6 +62,11 @@ function showSection(id) {
 function focusAddProduct() {
   showSection("inventory");
   setTimeout(() => document.getElementById("productName").focus(), 100);
+}
+
+function focusIncome() {
+  showSection("income");
+  setTimeout(() => document.getElementById("incomeName").focus(), 100);
 }
 
 function focusExpense() {
@@ -265,10 +274,10 @@ function isThisWeek(dateValue) {
 }
 
 function renderReport() {
-  const weeklySales = sales.filter(s => isThisWeek(s.date));
+  const weeklySales.reduce((sum, p) => sum + Number(p.amount), 0)
   const weeklyExpenses = expenses.filter(e => isThisWeek(e.date));
 
-  const salesTotal = weeklySales.reduce((sum, s) => sum + Number(s.total), 0);
+  const salesTotal = income.reduce((sum, i) => sum + paidOf(i), 0);
   const expenseTotal = weeklyExpenses.reduce((sum, e) => sum + Number(e.amount), 0);
 
   document.getElementById("weeklySales").textContent = peso(salesTotal);
@@ -282,8 +291,8 @@ function renderReport() {
   salesList.innerHTML = weeklySales.length
     ? weeklySales.map(s => `
         <div class="list-row">
-          <span>${s.id}<br><small class="muted">${formatDate(s.date)}</small></span>
-          <strong>${peso(s.total)}</strong>
+          <span>${escapeHtml(s.name)}<br><small class="muted">${formatDate(s.date)} · ${escapeHtml(s.method)}</small></span>
+          <strong>${peso(s.amount)}</strong>
         </div>
       `).join("")
     : `<div class="muted">No sales recorded this week.</div>`;
@@ -295,7 +304,7 @@ function renderReport() {
           <strong>${peso(e.amount)}</strong>
         </div>
       `).join("")
-    : `<div class="muted">No expenses recorded this week.</div>`;
+    : `<div class="muted">No income received this week.</div>`;
 }
 
 function renderDashboard() {
@@ -347,13 +356,205 @@ function showToast(message) {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => toast.classList.remove("show"), 2300);
 }
+// ===== Income & Payments =====
+const paidOf = i => i.payments.reduce((sum, p) => sum + Number(p.amount), 0);
+const balanceOf = i => Math.max(0, Number(i.total) - paidOf(i));
 
+function incomeStatus(i) {
+  const paid = paidOf(i);
+  if (paid >= Number(i.total)) return { key: "paid", label: "Paid", cls: "good" };
+  if (paid > 0) return { key: "partial", label: "Partial", cls: "low" };
+  return { key: "unpaid", label: "Unpaid", cls: "out" };
+}
+
+function allPayments() {
+  return income.flatMap(i => i.payments.map(p => ({ ...p, name: i.name, incomeId: i.id })));
+}
+
+function refreshMoney() {
+  saveAll();
+  renderIncome();
+  renderDashboard();
+  renderReport();
+}
+
+document.getElementById("incomeForm").addEventListener("submit", e => {
+  e.preventDefault();
+
+  const name = document.getElementById("incomeName").value.trim();
+  const total = Number(document.getElementById("incomeTotal").value);
+  const paid = Number(document.getElementById("incomePaid").value || 0);
+  const method = document.getElementById("incomeMethod").value;
+  const date = document.getElementById("incomeDate").value || todayString();
+
+  if (paid > total) {
+    showToast("Paid amount can't be more than the total.");
+    return;
+  }
+
+  const id = Date.now();
+  income.push({
+    id,
+    name,
+    total,
+    date,
+    payments: paid > 0 ? [{ id: id + 1, amount: paid, date, method }] : []
+  });
+
+  e.target.reset();
+  document.getElementById("incomeDate").value = todayString();
+  refreshMoney();
+  showToast(paid >= total ? "Income recorded (fully paid)." : "Income recorded.");
+});
+
+function renderIncome() {
+  const body = document.getElementById("incomeBody");
+  const filter = document.getElementById("incomeFilter").value;
+
+  const received = income.reduce((sum, i) => sum + paidOf(i), 0);
+  const outstanding = income.reduce((sum, i) => sum + balanceOf(i), 0);
+  const unpaidCount = income.filter(i => balanceOf(i) > 0).length;
+  const weekReceived = allPayments()
+    .filter(p => isThisWeek(p.date))
+    .reduce((sum, p) => sum + Number(p.amount), 0);
+
+  document.getElementById("incReceived").textContent = peso(received);
+  document.getElementById("incOutstanding").textContent = peso(outstanding);
+  document.getElementById("incOutstandingNote").textContent =
+    unpaidCount ? `${unpaidCount} customer${unpaidCount > 1 ? "s" : ""} still owe` : "nothing owed";
+  document.getElementById("incWeek").textContent = peso(weekReceived);
+  document.getElementById("incCount").textContent = income.length;
+
+  // totals per payment method
+  const byMethod = {};
+  allPayments().forEach(p => {
+    byMethod[p.method] = (byMethod[p.method] || 0) + Number(p.amount);
+  });
+  const methods = Object.entries(byMethod).sort((a, b) => b[1] - a[1]);
+  document.getElementById("methodList").innerHTML = methods.length
+    ? methods.map(([m, amt]) => `
+        <div class="list-row"><span>${escapeHtml(m)}</span><strong>${peso(amt)}</strong></div>
+      `).join("")
+    : `<div class="muted">No payments recorded yet.</div>`;
+
+  const rows = [...income]
+    .reverse()
+    .filter(i => filter === "all" || incomeStatus(i).key === filter);
+
+  if (!rows.length) {
+    body.innerHTML = `<tr><td colspan="8" class="muted">No income entries found.</td></tr>`;
+    return;
+  }
+
+  body.innerHTML = rows.map(i => {
+    const st = incomeStatus(i);
+    const bal = balanceOf(i);
+    const methodsUsed = [...new Set(i.payments.map(p => p.method))].join(", ") || "—";
+
+    return `
+      <tr>
+        <td data-label="Customer" class="c-name"><strong>${escapeHtml(i.name)}</strong></td>
+        <td data-label="Total" class="c-total">${peso(i.total)}</td>
+        <td data-label="Paid" class="c-paid">${peso(paidOf(i))}</td>
+        <td data-label="Balance" class="c-balance"><strong>${peso(bal)}</strong></td>
+        <td data-label="Date" class="c-date">${formatDate(i.date)}</td>
+        <td data-label="Status" class="c-status"><span class="status ${st.cls}">${st.label}</span></td>
+        <td data-label="Method" class="c-method">${escapeHtml(methodsUsed)}</td>
+        <td data-label="Action" class="c-action income-actions">
+          ${bal > 0 ? `<button class="pay-btn" onclick="openPayment(${i.id})">+ Payment</button>` : ""}
+          <button class="receipt-btn" onclick="makeReceipt(${i.id})">Receipt</button>
+          <button class="delete-btn" onclick="deleteIncome(${i.id})">Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+let payingId = null;
+
+function openPayment(id) {
+  const entry = income.find(i => i.id === id);
+  if (!entry) return;
+
+  payingId = id;
+  document.getElementById("payInfo").textContent =
+    `${entry.name} — balance ${peso(balanceOf(entry))}`;
+  document.getElementById("payAmount").value = balanceOf(entry);
+  document.getElementById("payAmount").max = balanceOf(entry);
+  document.getElementById("payDate").value = todayString();
+  document.getElementById("payDialog").showModal();
+}
+
+document.getElementById("payForm").addEventListener("submit", e => {
+  e.preventDefault();
+
+  const entry = income.find(i => i.id === payingId);
+  if (!entry) return;
+
+  const amount = Number(document.getElementById("payAmount").value);
+  if (amount <= 0 || amount > balanceOf(entry) + 0.001) {
+    showToast("Enter an amount up to the remaining balance.");
+    return;
+  }
+
+  entry.payments.push({
+    id: Date.now(),
+    amount,
+    date: document.getElementById("payDate").value || todayString(),
+    method: document.getElementById("payMethod").value
+  });
+
+  document.getElementById("payDialog").close();
+  refreshMoney();
+  showToast("Payment added.");
+});
+
+function deleteIncome(id) {
+  const entry = income.find(i => i.id === id);
+  if (!entry) return;
+  if (!confirm(`Delete "${entry.name}" and its payments?`)) return;
+
+  income = income.filter(i => i.id !== id);
+  refreshMoney();
+  showToast("Income entry deleted.");
+}
+
+function makeReceipt(id) {
+  const entry = income.find(i => i.id === id);
+  if (!entry) return;
+
+  lastReceipt = {
+    id: entry.id,
+    date: new Date().toISOString(),
+    items: [{ name: entry.name, qty: 1, subtotal: Number(entry.total) }],
+    total: Number(entry.total)
+  };
+  saveAll();
+  showSection("receipt");
+}
+// Move any old cart-era sales into the new income list (one time)
+if (sales.length) {
+  sales.forEach((s, n) => {
+    const day = String(s.date).slice(0, 10);
+    income.push({
+      id: Date.now() + n,
+      name: "Sale " + s.id,
+      total: Number(s.total),
+      date: day,
+      payments: [{ id: Date.now() + 1000 + n, amount: Number(s.total), date: day, method: "Cash" }]
+    });
+  });
+  sales = [];
+  saveAll();
+}
 function init() {
   renderDashboard();
   renderInventory();
+  renderIncome();
   renderExpenses();
   renderReceipt();
   renderReport();
+}
 }
 
 init();
