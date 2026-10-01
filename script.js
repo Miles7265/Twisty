@@ -1,7 +1,5 @@
 const defaultProducts = [
-  { id: 1, name: "Pink Rose Bouquet", price: 850, stock: 12 },
-  { id: 2, name: "Tulip Twist", price: 750, stock: 8 },
-  { id: 3, name: "Sunflower Bloom", price: 650, stock: 15 },
+  { id: 1, name: "Keychains", price: 25, stock: 10 },
 ];
 
 let products = JSON.parse(localStorage.getItem("twistyProducts")) || defaultProducts;
