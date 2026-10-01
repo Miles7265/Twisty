@@ -21,6 +21,7 @@
   <nav class="nav">
     <button class="nav-btn active" data-section="dashboard">Dashboard</button>
     <button class="nav-btn" data-section="inventory">Inventory</button>
+    <button class="nav-btn" data-section="income">Income</button>
     <button class="nav-btn" data-section="expenses">Expenses</button>
     <button class="nav-btn" data-section="receipt">Receipt</button>
     <button class="nav-btn" data-section="report">Weekly Report</button>
@@ -32,7 +33,7 @@
         <div>
           <span class="eyebrow">WELCOME</span>
           <h2>Dashboard</h2>
-          <p>Manage your flowers, sales, expenses, and weekly performance.</p>
+          <p>Manage your flowers, income, expenses, and weekly performance.</p>
         </div>
       </div>
 
@@ -48,9 +49,9 @@
           <small>total units available</small>
         </div>
         <div class="stat-card">
-          <span>🛒 Sales</span>
+          <span>💰 Income</span>
           <strong id="dashSales">₱0.00</strong>
-          <small>all recorded sales</small>
+          <small>payments received</small>
         </div>
         <div class="stat-card">
           <span>💸 Expenses</span>
@@ -75,6 +76,7 @@
           <div class="quick-actions">
             <button onclick="showSection('inventory')">🌸 Update Inventory</button>
             <button onclick="showSection('inventory'); focusAddProduct()">＋ Add Product</button>
+            <button onclick="focusIncome()">💰 Record Income</button>
             <button onclick="showSection('expenses'); focusExpense()">💸 Add Expense</button>
             <button onclick="showSection('report')">📊 Weekly Report</button>
           </div>
@@ -123,6 +125,110 @@
       </div>
     </section>
 
+ <section id="income" class="section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">INCOME</span>
+          <h2>Income &amp; Payments</h2>
+          <p>Record each sale, track what was paid, and collect any balance later.</p>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card highlight">
+          <span>💰 Total Received</span>
+          <strong id="incReceived">₱0.00</strong>
+          <small>all payments</small>
+        </div>
+        <div class="stat-card">
+          <span>⏳ Unpaid Balance</span>
+          <strong id="incOutstanding">₱0.00</strong>
+          <small id="incOutstandingNote">nothing owed</small>
+        </div>
+        <div class="stat-card">
+          <span>📅 This Week</span>
+          <strong id="incWeek">₱0.00</strong>
+          <small>received this week</small>
+        </div>
+        <div class="stat-card">
+          <span>🧾 Entries</span>
+          <strong id="incCount">0</strong>
+          <small>recorded sales</small>
+        </div>
+      </div>
+
+      <div class="panel form-panel" id="incomePanel">
+        <h3>Record Income</h3>
+        <form id="incomeForm" class="form-grid income-form">
+          <input id="incomeName" placeholder="Customer / item (e.g. Maria - Rose Bouquet)" required>
+          <input id="incomeTotal" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="Total amount" required>
+          <input id="incomePaid" type="number" inputmode="decimal" min="0" step="0.01" placeholder="Paid now (0 if unpaid)">
+          <select id="incomeMethod" aria-label="Payment method">
+            <option>Cash</option>
+            <option>GCash</option>
+            <option>Maya</option>
+            <option>Bank Transfer</option>
+            <option>Card</option>
+          </select>
+          <input id="incomeDate" type="date" required>
+          <button class="primary" type="submit">Add</button>
+        </form>
+      </div>
+
+      <div class="panel table-panel">
+        <div class="table-tools">
+          <select id="incomeFilter" onchange="renderIncome()" aria-label="Filter by status">
+            <option value="all">All entries</option>
+            <option value="unpaid">Unpaid</option>
+            <option value="partial">Partial</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer / Item</th>
+                <th>Total</th>
+                <th>Paid</th>
+                <th>Balance</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Method</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="incomeBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:18px">
+        <h3>Received by Payment Method</h3>
+        <div id="methodList" class="list"></div>
+      </div>
+
+      <dialog id="payDialog" class="pay-dialog">
+        <form id="payForm" class="pay-form">
+          <h3>Add Payment</h3>
+          <p id="payInfo" class="muted"></p>
+          <input id="payAmount" type="number" inputmode="decimal" min="0.01" step="0.01" placeholder="Amount received" required>
+          <select id="payMethod" aria-label="Payment method">
+            <option>Cash</option>
+            <option>GCash</option>
+            <option>Maya</option>
+            <option>Bank Transfer</option>
+            <option>Card</option>
+          </select>
+          <input id="payDate" type="date" required>
+          <div class="pay-actions">
+            <button type="button" class="secondary" onclick="document.getElementById('payDialog').close()">Cancel</button>
+            <button type="submit" class="primary">Save Payment</button>
+          </div>
+        </form>
+      </dialog>
+    </section>
+    
     <section id="expenses" class="section">
       <div class="section-heading">
         <div>
@@ -187,20 +293,20 @@
         <div>
           <span class="eyebrow">REPORT</span>
           <h2>Weekly Report</h2>
-          <p>Review sales, expenses, and estimated net income for the current week.</p>
+          <p>Review income received, expenses, and estimated net income for the current week.</p>
         </div>
       </div>
 
       <div class="stats">
-        <div class="stat-card"><span>🛍 Weekly Sales</span><strong id="weeklySales">₱0.00</strong></div>
+        <div class="stat-card"><span>💰 Weekly Income</span><strong id="weeklySales">₱0.00</strong></div>
         <div class="stat-card"><span>💸 Weekly Expenses</span><strong id="weeklyExpenses">₱0.00</strong></div>
         <div class="stat-card"><span>💰 Estimated Net</span><strong id="weeklyNet">₱0.00</strong></div>
-        <div class="stat-card"><span>🧾 Transactions</span><strong id="weeklyTransactions">0</strong></div>
+        <div class="stat-card"><span>🧾 Payments</span><strong id="weeklyTransactions">0</strong></div>
       </div>
 
       <div class="dashboard-grid">
         <div class="panel">
-          <h3>Weekly Sales</h3>
+          <h3>Weekly Income</h3>
           <div id="weeklySalesList" class="list"></div>
         </div>
         <div class="panel">
