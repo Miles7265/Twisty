@@ -192,6 +192,26 @@ function renderReceipt() {
     <div class="receipt-thanks">Thank you for choosing Twisty Bloom! 🌸</div>
   `;
 }
+// ===== Receipt paper size =====
+const paperSizes = {
+  "58mm": "58mm 200mm",
+  "80mm": "80mm 200mm",
+  "98x148": "98mm 148mm",
+};
+
+function setPaperSize(size) {
+  if (!paperSizes[size]) size = "80mm";
+  localStorage.setItem("twistyPaper", size);
+  document.getElementById("paperSize").value = size;
+
+  let style = document.getElementById("pageSizeStyle");
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "pageSizeStyle";
+    document.head.appendChild(style);
+  }
+  style.textContent = `@page { size: ${paperSizes[size]}; margin: 4mm; }`;
+}
 
 function printReceipt() {
   if (!lastReceipt) {
