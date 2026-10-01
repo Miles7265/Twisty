@@ -96,6 +96,17 @@
 
       <div class="panel form-panel" id="addProductPanel">
         <h3>Add New Product</h3>
+            <label class="photo-picker">
+            <span class="photo-preview" id="photoPreview">
+              <span class="ph-icon">📷</span>
+              <span class="ph-text">Add photo</span>
+            </span>
+            <span class="photo-hint">
+              Product photo (optional)
+              <small>Every photo is cropped to the same square size</small>
+            </span>
+            <input id="productPhoto" type="file" accept="image/*" hidden>
+          </label>
         <form id="productForm" class="form-grid">
           <input id="productName" placeholder="Product name" required>
           <input id="productPrice" type="number" min="0" step="0.01" placeholder="Price" required>
